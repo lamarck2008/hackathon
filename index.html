@@ -78,14 +78,30 @@
 
   <form class="transformation" id="split-form" style="border: dotted 1px black; height: 120px; margin: 10px 10px 10px 10px">
     Column Name:<br>
-    <input id="col-name" type="text" name="split-old">
+    <input id="col-name" type="text" name="attribute">
     <br>
     Delimiter:<br>
     <input type="text" name="delimiter">
     <input type="submit" value="Split">
-    <input name="type" type="hidden" value="replace">
+    <input name="type" type="hidden" value="split">
   </form>
 
+  <form class="transformation" id="rename-form" style="border: dotted 1px black; height: 120px; margin: 10px 10px 10px 10px">
+    Column Name:<br>
+    <input id="col-name" type="text" name="attribute">
+    <br>
+    New Name:<br>
+    <input type="text" name="newValue">
+    <input type="submit" value="Rename">
+    <input name="type" type="hidden" value="rename">
+  </form>
+
+  <form class="transformation" id="hide-form" style="border: dotted 1px black; height: 120px; margin: 10px 10px 10px 10px">
+    Column Name:<br>
+    <input id="col-name" type="text" name="attribute">
+    <input type="submit" value="Hide">
+    <input name="type" type="hidden" value="hide">
+  </form>
 </div>
 
 
@@ -98,15 +114,18 @@
                 enableColumnReorder: false
               };
 
-  $.ajax({
-    url: "http://172.20.13.197:8080/source/us",
-    type: "GET",
-    async: false,
-    success: function(response) {
-      columns = response.columns;
-    }
-  });
+  updateColumn = function(){
+      $.ajax({
+      url: "http://172.20.13.197:8080/source/us",
+      type: "GET",
+      async: false,
+      success: function(response) {
+        columns = response.columns;
+      }
+    });  
+  };
 
+  updateColumn();
   dataView = {
     getLength: function() {
       return 1000;
@@ -135,18 +154,16 @@
 
   $('#replace-form').submit(function() {
      var frm = $(this);
-     var dat = JSON.stringify(frm.serializeArray());
+     var dat = frm.serializeArray();
      var request = {};
-     for(var i = 0; i < dat.arrayLength; i++) {
+     for(var i = 0; i < dat.length; i++) {
       request[dat[i].name] = dat[i].value;
      }
-
-     alert("I am about to POST this:\n\n" + dat);
 
      $.ajax({
          type: "POST",
          url: "http://172.20.13.197:8080/source/us/xform",
-         data: request,
+         data: JSON.stringify(request),
          success: function(){},
          dataType: "json",
          contentType : "application/json"
@@ -155,23 +172,66 @@
 
   $('#split-form').submit(function() {
      var frm = $(this);
-     var dat = JSON.stringify(frm.serializeArray());
+     var dat = frm.serializeArray();
      var request = {};
-     for(var i = 0; i < dat.arrayLength; i++) {
+     
+     for(var i = 0; i < dat.length; i++) {
       request[dat[i].name] = dat[i].value;
      }
-
-     alert("I am about to POST this:\n\n" + dat);
 
      $.ajax({
          type: "POST",
          url: "http://172.20.13.197:8080/source/us/xform",
-         data: request,
-         success: function(){},
+         data: JSON.stringify(request),
+         success: function(){
+          updateColumn();
+         },
          dataType: "json",
          contentType : "application/json"
      });
   }); 
+
+  $('#rename-form').submit(function() {
+     var frm = $(this);
+     var dat = frm.serializeArray();
+     var request = {};
+     
+     for(var i = 0; i < dat.length; i++) {
+      request[dat[i].name] = dat[i].value;
+     }
+
+     $.ajax({
+         type: "POST",
+         url: "http://172.20.13.197:8080/source/us/xform",
+         data: JSON.stringify(request),
+         success: function(){
+          updateColumn();
+         },
+         dataType: "json",
+         contentType : "application/json"
+     });
+  }); 
+
+  $('#hide-form').submit(function() {
+   var frm = $(this);
+   var dat = frm.serializeArray();
+   var request = {};
+   
+   for(var i = 0; i < dat.length; i++) {
+    request[dat[i].name] = dat[i].value;
+   }
+
+   $.ajax({
+       type: "POST",
+       url: "http://172.20.13.197:8080/source/us/xform",
+       data: JSON.stringify(request),
+       success: function(){
+        updateColumn();
+       },
+       dataType: "json",
+       contentType : "application/json"
+   });
+}); 
 
   // grid.autosizeColumns();
 </script>
