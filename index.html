@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Tamr</title>
+  <link rel="stylesheet" href="static/css/slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="static/css/index.css" type="text/css"/>
+  <link rel="stylesheet" href="static/css/dropzone.css" type="text/css"/>
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css"> 
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  -->
+
+  <script src="static/js/jquery.min.js"></script>
+  <script src="static/js/dropzone.js"></script>
+  <script src="lib/jquery.event.drag-2.2.js"></script>
+  <script src="static/js/slick.core.js"></script>
+  <script src="static/js/slick.grid.js"></script>
+  
+
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: White;
+      overflow: auto;
+    }
+
+    body {
+      font: 11px Helvetica, Arial, sans-serif;
+    }
+
+    #slidebar {
+      position: absolute;
+      right: 0;
+      width: 400px;
+      top: 0;
+      bottom: 0;
+      background-color: white;
+      -webkit-box-shadow: inset 10px 0px 20px -15px rgba(0, 0, 0, 1);
+      -moz-box-shadow: inset 10px 0px 20px -15px rgba(0, 0, 0, 1);
+      box-shadow: inset 10px 0px 20px -15px rgba(0,0,0,1);
+    }
+
+    #data {
+      position: absolute;
+      right: 400px;
+      left: 0px;
+      top: 0;
+      bottom: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div id="data"></div>
+<div id="slidebar">
+  <div id="upload_file" style="border: dotted 1px black; height: 100px; margin: 10px 10px 10px 10px">
+    <form class="dropzone" action="http://172.20.13.197:8080/source/test" method="post" enctype="multipart/form-data">
+        <!-- <input type="file" name="file" /> -->
+    </form>
+  </div>
+  <div id="transformation" style="border: dotted 1px black; height: 100px; margin: 10px 10px 10px 10px">
+    <textarea style="resize: none;">Old value</textarea>
+    <textarea style="resize: none;">New value</textarea>
+    <button type="button" class="btn btn-default" aria-label="Left Align">
+      <span class="glyphicon glyphicon-align-left" aria-hidden="true"></span>
+  </button>
+  </div>
+</div>
+
+
+<script>
+  var grid,
+      data = [],
+      columns,
+      options = {
+                enableCellNavigation: false,
+                enableColumnReorder: false
+              };
+
+  $.ajax({
+    url: "http://172.20.13.197:8080/source/us",
+    type: "GET",
+    async: false,
+    success: function(response) {
+      columns = response.columns;
+    }
+  });
+
+  dataView = {
+    getLength: function() {
+      return 1000;
+    },
+
+    getItem: function(index) {
+      var item = {};
+      $.ajax({
+        url: "http://172.20.13.197:8080/source/us/data/" + index,
+        type: "GET",
+        async: false,
+        success: function (response) { 
+          item = response;
+        }
+      });
+      return item;
+    }
+  };
+  grid = new Slick.Grid("#data", dataView, columns, options);
+  grid.onHeaderClick.subscribe(function(e, args) {
+    var columnID = args.column.id;
+    console.log(columnID);
+  });
+  // grid.autosizeColumns();
+</script>
+</body>
+</html>
