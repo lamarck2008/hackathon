@@ -62,13 +62,30 @@
         <!-- <input type="file" name="file" /> -->
     </form>
   </div>
-  <div id="transformation" style="border: dotted 1px black; height: 100px; margin: 10px 10px 10px 10px">
-    <textarea style="resize: none;">Old value</textarea>
-    <textarea style="resize: none;">New value</textarea>
-    <button type="button" class="btn btn-default" aria-label="Left Align">
-      <span class="glyphicon glyphicon-align-left" aria-hidden="true"></span>
-  </button>
-  </div>
+
+  <form class="transformation" method="post" id="replace-form" style="border: dotted 1px black; height: 120px; margin: 10px 10px 10px 10px">
+    Column Name:<br>
+    <input id="col-name" type="text" name="attribute">
+    <br>
+    Old Value:<br>
+    <input type="text" name="oldValue">
+    <br>
+    New Value:<br>
+    <input type="text" name="newValue">
+    <input type="submit" value="Replace">
+    <input name="type" type="hidden" value="replace">
+  </form>
+
+  <form class="transformation" id="split-form" style="border: dotted 1px black; height: 120px; margin: 10px 10px 10px 10px">
+    Column Name:<br>
+    <input id="col-name" type="text" name="split-old">
+    <br>
+    Delimiter:<br>
+    <input type="text" name="delimiter">
+    <input type="submit" value="Split">
+    <input name="type" type="hidden" value="replace">
+  </form>
+
 </div>
 
 
@@ -111,8 +128,51 @@
   grid = new Slick.Grid("#data", dataView, columns, options);
   grid.onHeaderClick.subscribe(function(e, args) {
     var columnID = args.column.id;
-    console.log(columnID);
+    $('.transformation').each(function(i, elem) {
+      $($(elem).children()[1]).val(columnID)
+    });
   });
+
+  $('#replace-form').submit(function() {
+     var frm = $(this);
+     var dat = JSON.stringify(frm.serializeArray());
+     var request = {};
+     for(var i = 0; i < dat.arrayLength; i++) {
+      request[dat[i].name] = dat[i].value;
+     }
+
+     alert("I am about to POST this:\n\n" + dat);
+
+     $.ajax({
+         type: "POST",
+         url: "http://172.20.13.197:8080/source/us/xform",
+         data: request,
+         success: function(){},
+         dataType: "json",
+         contentType : "application/json"
+     });
+  }); 
+
+  $('#split-form').submit(function() {
+     var frm = $(this);
+     var dat = JSON.stringify(frm.serializeArray());
+     var request = {};
+     for(var i = 0; i < dat.arrayLength; i++) {
+      request[dat[i].name] = dat[i].value;
+     }
+
+     alert("I am about to POST this:\n\n" + dat);
+
+     $.ajax({
+         type: "POST",
+         url: "http://172.20.13.197:8080/source/us/xform",
+         data: request,
+         success: function(){},
+         dataType: "json",
+         contentType : "application/json"
+     });
+  }); 
+
   // grid.autosizeColumns();
 </script>
 </body>
