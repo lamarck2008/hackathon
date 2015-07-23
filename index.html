@@ -31,14 +31,20 @@
     body {
       font: 11px Helvetica, Arial, sans-serif;
     }
+  
+   h4 {
+    text-align: center
+   }
 
     #slidebar {
       position: absolute;
       right: 0;
-      width: 400px;
-      top: 0;
+      width: 200px;
+      top: 0px;
       bottom: 0;
-      background-color: white;
+      overflow-y: scroll;
+      /*background-color: lightgrey;*/
+      /*border: 2px solid #D3D3D3;*/
       -webkit-box-shadow: inset 10px 0px 20px -15px rgba(0, 0, 0, 1);
       -moz-box-shadow: inset 10px 0px 20px -15px rgba(0, 0, 0, 1);
       box-shadow: inset 10px 0px 20px -15px rgba(0,0,0,1);
@@ -46,24 +52,52 @@
 
     #data {
       position: absolute;
-      right: 400px;
+      right: 200px;
       left: 0px;
-      top: 0;
+      top: 0px;
+      /*border: 2px solid #D3D3D3;*/
       bottom: 0;
     }
+
+    .slick-header-column.ui-state-default {
+      background:none ;
+      background-color: #505050 ;
+      color: #eeeeee;  
+      /*border: none;  */
+      padding: 0;
+      text-shadow: none;
+      text-align: center;
+      font-family: Arial, Verdana, Helvetica, sans-serif;
+      font-size: 13px;
+      height: 40px;
+      line-height: 40px;    
+    }
+
+/*    .slick-row.ui-widget-content, .slick-cell {
+      background: none;
+      background-color: #eeeeee;
+      color: #666666;
+      border: none;
+      border-bottom: solid 1px #ffffff;
+      font-size: 14px;
+      height: 60px;
+      line-height: 60px;
+      padding: 0 5px;
+    }*/
   </style>
 </head>
 <body>
 
 <div id="data"></div>
 <div id="slidebar">
-  <div id="upload_file" style="border: dotted 1px black; height: 100px; margin: 10px 10px 10px 10px">
-    <form class="dropzone" action="http://172.20.13.197:8080/source/test" method="post" enctype="multipart/form-data">
+  <div style="border: dotted 1px black; height: 150px; margin: 10px 10px 10px 10px; overflow: hidden">
+    <form id="uploadFile" class="dropzone" action="http://172.20.13.197:8080/source/us">
         <!-- <input type="file" name="file" /> -->
     </form>
   </div>
-
-  <form class="transformation" method="post" id="replace-form" style="border: dotted 1px black; height: 120px; margin: 10px 10px 10px 10px">
+  
+  <h4>Replace value</h4>
+  <form class="transformation" method="post" id="replace-form" style="border: dotted 1px black; height: 140px; margin: 10px 10px 10px 10px">
     Column Name:<br>
     <input id="col-name" type="text" name="attribute">
     <br>
@@ -75,8 +109,9 @@
     <input type="submit" value="Replace">
     <input name="type" type="hidden" value="replace">
   </form>
-
-  <form class="transformation" id="split-form" style="border: dotted 1px black; height: 120px; margin: 10px 10px 10px 10px">
+  
+  <h4>Split column</h4>
+  <form class="transformation" id="split-form" style="border: dotted 1px black; height: 140px; margin: 10px 10px 10px 10px">
     Column Name:<br>
     <input id="col-name" type="text" name="attribute">
     <br>
@@ -86,7 +121,8 @@
     <input name="type" type="hidden" value="split">
   </form>
 
-  <form class="transformation" id="rename-form" style="border: dotted 1px black; height: 120px; margin: 10px 10px 10px 10px">
+  <h4>Rename column</h4>
+  <form class="transformation" id="rename-form" style="border: dotted 1px black; height: 140px; margin: 10px 10px 10px 10px">
     Column Name:<br>
     <input id="col-name" type="text" name="attribute">
     <br>
@@ -96,7 +132,8 @@
     <input name="type" type="hidden" value="rename">
   </form>
 
-  <form class="transformation" id="hide-form" style="border: dotted 1px black; height: 120px; margin: 10px 10px 10px 10px">
+  <h4>Hide column</h4>
+  <form class="transformation" id="hide-form" style="border: dotted 1px black; height: 140px; margin: 10px 10px 10px 10px">
     Column Name:<br>
     <input id="col-name" type="text" name="attribute">
     <input type="submit" value="Hide">
@@ -107,8 +144,9 @@
 
 <script>
   var grid,
+      size = 0,
       data = [],
-      columns,
+      columns = [],
       options = {
                 enableCellNavigation: false,
                 enableColumnReorder: false
@@ -121,11 +159,13 @@
       async: false,
       success: function(response) {
         columns = response.columns;
+        size = response.size;
       }
     });  
   };
 
   updateColumn();
+
   dataView = {
     getLength: function() {
       return 1000;
@@ -145,12 +185,23 @@
     }
   };
   grid = new Slick.Grid("#data", dataView, columns, options);
+
   grid.onHeaderClick.subscribe(function(e, args) {
     var columnID = args.column.id;
     $('.transformation').each(function(i, elem) {
       $($(elem).children()[1]).val(columnID)
     });
   });
+
+  Dropzone.options.uploadFile = {
+    init: function () {
+      this.on("success", function (file) {
+        updateColumn();
+        grid.updateRowCount(size);
+        grid.setColumns(columns);
+      });
+    }
+  };
 
   $('#replace-form').submit(function() {
      var frm = $(this);
